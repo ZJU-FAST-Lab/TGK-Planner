@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="odom_topic" value="/visual_slam/odom" />
+  <arg name="depth_topic" value="/pcl_render_node/depth" />
+<!--   <arg name="global_env_pcd2_topic" value="cloud_pcd" /> -->
+  <arg name="global_env_pcd2_topic" value="/random_forest/all_map" />
+  <arg name="map_size_x" value="40.0" />
+  <arg name="map_size_y" value="40.0" />
+  <arg name="map_size_z" value="5" />
+  <arg name="origin_x" value=" -20.0" />
+  <arg name="origin_y" value=" -20.0" />
+  <arg name="origin_z" value=" -1" />
+  <arg name="resolution" value="0.1" />
+  <arg name="vel_limit" value="7.0" />
+  <arg name="acc_limit" value="5.0" />
+
+  <node pkg="state_machine" type="state_machine_node" name="state_machine_node" output="screen"> 
+    <remap from="/global_cloud" to="$(arg global_env_pcd2_topic)"/>
+    <remap from="/odom_topic" to="$(arg odom_topic)"/>
+    <remap from="/depth_topic" to="$(arg depth_topic)" />
+    
+    <param name="occ_map/origin_x" value="$(arg origin_x)" type="double"/>
+    <param name="occ_map/origin_y" value="$(arg origin_y)" type="double"/>
+    <param name="occ_map/origin_z" value="$(arg origin_z)" type="double"/>
+    <param name="occ_map/map_size_x" value="$(arg map_size_x)" type="double"/>
+    <param name="occ_map/map_size_y" value="$(arg map_size_y)" type="double"/>
+    <param name="occ_map/map_size_z" value="$(arg map_size_z)" type="double"/>
+    <param name="occ_map/local_radius_x"  value="6" /> 
+    <param name="occ_map/local_radius_y"  value="6" /> 
+    <param name="occ_map/local_radius_z"  value="3" /> 
+    <param name="occ_map/resolution" value="$(arg resolution)" type="double"/>
+    <param name="occ_map/show_raw_depth" value="true" type="bool"/>
+    <param name="occ_map/show_filter_proj_depth" value="true" type="bool"/>
+		<param name="occ_map/depth_scale" value="1000.0"/>
+		<param name="occ_map/depth_filter_maxdist"   value="6.0"/>
+    <param name="occ_map/depth_filter_mindist"   value="0.1"/>
+		<param name="occ_map/depth_filter_margin"    value="1"/>
+    <param name="occ_map/skip_pixel" value="2"/>
+
+    <!-- use when mapping frequency is high (>= 30Hz) -->
+    <param name="occ_map/use_shift_filter" value="false" type="bool"/>
+    <param name="occ_map/depth_filter_tolerance" value="0.2"/>
+    
+    <param name="occ_map/cx" value="257.296"/>
+    <param name="occ_map/cy" value="236.743"/>
+    <param name="occ_map/fx" value="385.754"/>
+    <param name="occ_map/fy" value="385.754"/>
+    <param name="occ_map/rows" value="480"/>
+    <param name="occ_map/cols" value="640"/>
+
+    <param name="occ_map/prob_hit_log"  value="1.2"/>
+    <param name="occ_map/prob_miss_log" value="-0.30"/>
+    <param name="occ_map/clamp_min_log"  value="-1.0"/>
+    <param name="occ_map/clamp_max_log"  value="2.0"/>
+    <param name="occ_map/min_occupancy_log"  value="1.39"/>
+    <param name="occ_map/min_ray_length" value="0.1"/>
+    <param name="occ_map/max_ray_length" value="6.0"/>
+    <param name="occ_map/use_global_map" value="true" type="bool"/>
+
+    <param name="pos_checker/hrz_safe_radius" value="0.2"/>
+    <param name="pos_checker/vtc_safe_radius" value="0.2"/>
+    <param name="pos_checker/copter_diag_len" value="0.4"/>
+    <param name="pos_checker/dt" value="0.015"/>
+    <param name="pos_checker/inflate" value="true"/>
+  
+    <!-- kinorrt* params --> 
+    <param name="krrt/rho" value="0.13" type="double"/> <!-- the quadratic matrix R of u'Ru -->
+    <param name="krrt/vel_limit" value="$(arg vel_limit)" type="double" />
+    <param name="krrt/acc_limit" value="$(arg acc_limit)" type="double" />
+    <param name="krrt/tree_node_nums" value="5000" type="int" />
+    <param name="krrt/orphan_nums" value="1500" type="int" />
+    <param name="krrt/debug_vis" value="false" type="bool" />
+    <param name="krrt/radius_cost_between_two_states" value="5" type="double" /> <!-- cost tolerance -->
+    <param name="krrt/allow_orphan" value="false" type="bool" />
+    <param name="krrt/allow_close_goal" value="true" type="bool" />
+    <param name="krrt/stop_after_first_traj_found" value="false" type="bool" />
+    <param name="krrt/rewire" value="true" type="bool" />
+
+    <param name="sampler/vel_mag_mean" value="3.0" type="double" />
+    <param name="sampler/pos_hrz_var" value="1.0" type="double" />
+    <param name="sampler/pos_vtc_var" value="0.2" type="double" />
+    <param name="sampler/vel_mag_var" value="0.5" type="double" />
+    <param name="sampler/vel_dir_var" value="0.2" type="double" />
+    <param name="sampler/resolution" value="$(arg resolution)" type="double" />
+
+    <param name="optimization/vel_limit" value="$(arg vel_limit)" type="double" />
+    <param name="optimization/acc_limit" value="$(arg acc_limit)" type="double" />
+    
+    <!-- fsm params --> 
+    <param name="fsm/use_optimization" value="true" type="bool"/>
+    <param name="fsm/replan" value="true" type="bool"/>
+    <param name="fsm/replan_time" value="0.05" type="double"/>
+    <param name="fsm/allow_track_err_replan" value="false" type="bool"/>
+    <param name="fsm/e_stop_time_margin" value="0.5" type="double"/>
+    <param name="fsm/replan_check_duration" value="3.0" type="double"/>
+    <param name="fsm/bidirection" value="false" type="bool" />
+    
+  </node>
+    
+  <include file="$(find state_machine)/launch/server.launch"/>
+    
+</launch>

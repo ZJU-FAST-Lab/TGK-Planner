@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node pkg="state_machine" type="traj_server_node" name="traj_server_node" output="screen">
+    <remap from="/curr_state_sub_topic" to="/visual_slam/odom" />
+    <remap from="/position_cmd" to="planning/pos_cmd"/>
+  </node>
+  
+</launch>

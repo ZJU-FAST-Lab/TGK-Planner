@@ -1,33 +1,119 @@
 # TGK-Planner
 TGK-Planner: An Efficient Topology Guided Kinodynamic Planner for Autonomous Quadrotors
 
-Code will be released as soon as the paper is accepted.
+##  About
+__TGK-Planner__ is a hierarchical trajectory planner for multirotors with a sampling-based kinodynamic front-end and an optimization back-end.
+It can serve as a global kinodynamic planner to find asymptotically optimal trajectories or as a local kinodynamic planner for quick replans.
 
-## 0. About
-__TGK-Planner__ is a a hierarchical trajectory planner for quadrotors with a sampling-based kinodynamic front-end and an optimization back-end.
+__Authors__: Hongkai YE and [Fei GAO](https://ustfei.com/) from the [ZJU Fast Lab](http://www.kivact.com/).
 
-__Author__: Hongkai Ye and [Fei Gao](https://ustfei.com/) from the [ZJU Fast Lab](http://www.kivact.com/).
+__Related Paper__:
+[Arxiv Preprint](https://arxiv.org/abs/2008.03468) (Submitted to IEEE RA-L)
 
-__Related Papers__:
-Coming soon.
-
-__Video Links__: [youtube](https://youtu.be/nNS0p8h5zAk)
+__Video Links__: [Youtube](https://youtu.be/nNS0p8h5zAk), [Bilibili](https://www.bilibili.com/video/BV1gA411e7DH) (For Mainland China)
 
 <p align="center">
-  <img src="misc/indoor_single.gif" width = "480" height = "270"/>
-  <img src="misc/follow.gif" width = "480" height = "270"/>
-  <img src="misc/rviz_set.gif" width = "480" height = "270"/>
+  <img src="misc/indoor_single.gif" width = "360" height = "200"/>
+  <img src="misc/follow.gif" width = "360" height = "200"/>
+  <img src="misc/rviz_set.gif" width = "360" height = "200"/>
+  <img src="misc/3d_motion_compare.png" width = "360" height = "200"/>
 </p>
 
-## 1. Features
+# Run The Simulation
+The repo has been tested on Ubuntu 16.04 and 18.04 with ros-desktop-full installation.
 
-## 2. Run The Simulation
+## 1. Prerequisites
+The __uav_simulator__ depends on the C++ linear algebra library [Armadillo](http://arma.sourceforge.net/). You can install it by:
+```
+~$ sudo apt-get install libarmadillo-dev
+``` 
+## 2. Build on ROS
+We recommand create a new catkin workspace:
+```
+~$ mkdir -p tgk_ws/src
+```
+Change directory to _~/tgk_ws/src_ and clone the repo:
+```
+~$ cd tgk_ws/src
+~/tgk_ws/src$ git clone https://github.com/ZJU-FAST-Lab/TGK-Planner.git
+```
+Change directory to _~/tgk_ws_ and make:
+```
+~/tgk_ws/src$ cd ..
+~/tgk_ws$ catkin_make
+```
+If compilation errors like __header files not found__ occur, pleause first compile the package __self_msgs_and_srvs__:
+```
+~/tgk_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES="self_msgs_and_srvs"
+~/tgk_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=""
+```
+or simply use single-thread compilation catkin_make -j1:
+```
+~/tgk_ws$ catkin_make -j1
+```
 
-### 2.1 Prerequisites
+## 3. Run 
+In directory _~/tgk_ws_, set up the environment and launch the simulator:
+```
+~/tgk_ws$ source devel/setup.bash
+~/tgk_ws$ roslaunch state_machine rviz.launch
+```
 
-### 2.2 Build on ROS
+Open another terminal, set up the environment and launch the planner:
+```
+~/tgk_ws$ source devel/setup.bash
+~/tgk_ws$ roslaunch state_machine planning.launch
+```
+If everything goes well, you should be able to navigate the drone as the gif shows below. (Click 3D Nav Goal in the Rviz panel or press g in keyboard to selecet goal. Click down both left and right mouse buttons and drag to change the goal altitude.)
 
-### 2.3 Run 
 <p align="center">
-  <img src="misc/sim.gif" width = "480" height = "355"/>
+  <img src="misc/sim_global.gif" width = "480" height = "260"/>
 </p>
+
+By default, the global map is known, and the space outside a certain local bound is treated as free.
+
+
+# Use Onboard Sensors
+
+To acquire more realistic simulations, a GPU-based onboard depth camera sensor simulator can be enabled by changing the CMakeLists.txt in the package __depth_sensor_simulator__ as below and then re-compile. (Do not foget to change the 'arch' and 'code' flags according to your graphics card devices. You can check the right code [here](https://github.com/tpruvot/ccminer/wiki/Compatibility).)
+```
+#set(ENABLE_CUDA false)
+set(ENABLE_CUDA true)
+...
+list(APPEND CUDA_NVCC_FLAGS -arch=sm_30)
+list(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_30,code=sm_30)
+```
+Set the __occ_map/use_global_map__ param in __planning.launch__ to false and re-launch both __rviz.launch__ and __rviz.launch__ as before.
+```
+<param name="occ_map/use_global_map" value="false" type="bool"/>
+```
+Now the map is built on instant depth observations.
+<p align="center">
+  <img src="misc/sim_local.gif" width = "480" height = "260"/>
+</p>
+
+## Main Params That Affect Performance
+In planning.launch:
+```
+# Smaller rho means more aggressive maneuvers and higher flying speed.
+<param name="krrt/rho" value="0.13" type="double"/> 
+
+# It should decrease as rho increases.
+<param name="sampler/vel_mag_mean" value="3.0" type="double" />
+
+# Time budget for replan. More time budget leads to higher quality trajectories.
+<param name="fsm/replan_time" value="0.05" type="double"/> RRT*
+```
+In simulator.launch:
+```
+# Obstacle numbers.
+<param name="map/obs_num" value="550"/>    
+<param name="map/circle_num" value="100"/>   
+```
+# Licence
+The source code is released under [GPLv3](http://www.gnu.org/licenses/) license.
+
+# Maintaince
+The peoject is under maintaince.
+
+For any technical issues, please contact Hongkai YE (hkye@zju.edu.cn, kyle_yeh@163.com) or Fei GAO (fgaoaa@zju.edu.cn).

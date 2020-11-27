@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<node pkg="rosbag" type="record" name="bag_record" output="screen" args="-o /home/dji/data/bag/kaixuan /occ_map/history_view_cloud /occ_map/local_view_cloud /state_machine_node/a_traj_pos /state_machine_node/a_traj_vel /state_machine_node/a_traj_acc /state_machine_node/opti_traj_pos /state_machine_node/opti_traj_vel /state_machine_node/opti_traj_acc /state_machine_node/topo /state_machine_node/best_traj_pos /state_machine_node/optimized_traj_cover /position_cmd /state_machine_node/start_and_goal /state_machine_node/ref_traj_pos /state_machine_node/ref_traj_vel /state_machine_node/ref_traj_acc /planning/position_cmd_vis /ego_pose /ego_acc /ego_vel /tf /tf_static /fcoa_output /propagated_fcoa /imu_output /ctrl/ctrl /disp_0 /disp/cam_info_0 /rectify/omni_0 /rectify/cam_info_0 /vio_output --tcpnodelay">
+  </node>
+  
+</launch>
