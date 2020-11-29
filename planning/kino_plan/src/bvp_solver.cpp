@@ -1,4 +1,4 @@
-#include "krrtstar/bvp_solver.h"
+#include "kino_plan/bvp_solver.h"
 
 namespace BVPSolver
 {

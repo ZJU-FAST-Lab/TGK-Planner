@@ -1,5 +1,5 @@
-#include "krrtstar/krrtplanner.h"
-#include "krrtstar/raycast.h"
+#include "kino_plan/krrtplanner.h"
+#include "kino_plan/raycast.h"
 #include <float.h>
 #include <queue>
 #include <ros/console.h>

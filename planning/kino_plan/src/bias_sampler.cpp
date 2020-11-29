@@ -1,4 +1,4 @@
-#include "krrtstar/bias_sampler.h"
+#include "kino_plan/bias_sampler.h"
 
 namespace tgk_planner
 {

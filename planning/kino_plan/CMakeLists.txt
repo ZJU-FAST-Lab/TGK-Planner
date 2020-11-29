@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(krrtstar)
+project(kino_plan)
 
 add_compile_options(-std=c++11)
 set(CMAKE_BUILD_TYPE "Release")
@@ -19,7 +19,7 @@ find_package(PCL 1.7 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES krrtstar
+  LIBRARIES kino_plan
   CATKIN_DEPENDS occ_grid poly_traj_utils
 #  DEPENDS system_lib
 )

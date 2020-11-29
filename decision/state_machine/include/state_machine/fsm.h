@@ -4,7 +4,7 @@
 #include "self_msgs_and_srvs/GlbObsRcv.h"
 #include "occ_grid/occ_map.h"
 #include "occ_grid/pos_checker.h"
-#include "krrtstar/krrtplanner.h"
+#include "kino_plan/krrtplanner.h"
 #include "visualization_utils/visualization_utils.h"
 #include "poly_opt/traj_optimizer.h"
 #include "quadrotor_msgs/PolynomialTrajectory.h"

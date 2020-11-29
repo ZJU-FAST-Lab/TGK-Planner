@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     rospy
     std_msgs
     occ_grid
-    krrtstar
+    kino_plan
     poly_opt
     quadrotor_msgs
     visualization_utils
