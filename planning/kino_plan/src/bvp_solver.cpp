@@ -5,19 +5,41 @@ namespace BVPSolver
 
 bool IntegratorBVP::solveDouble()
 {
+  bool result = calTauStarDouble();
+  
+  double t2 = tau_star_*tau_star_;
+  double t3 = t2*tau_star_;
+  coeff_(0, 0) = (2.0*(x0_[0]-x1_[0])+tau_star_*(x0_[3]+x1_[3]))/t3;
+  coeff_(0, 1) = -(3.0*(x0_[0]-x1_[0])+tau_star_*(2*x0_[3]+x1_[3]))/t2;
+  coeff_(0, 2) = x0_[3];
+  coeff_(0, 3) = x0_[0];
+  coeff_(1, 0) = (2.0*(x0_[1]-x1_[1])+tau_star_*(x0_[4]+x1_[4]))/t3;
+  coeff_(1, 1) = -(3.0*(x0_[1]-x1_[1])+tau_star_*(2*x0_[4]+x1_[4]))/t2;
+  coeff_(1, 2) = x0_[4];
+  coeff_(1, 3) = x0_[1];
+  coeff_(2, 0) = (2.0*(x0_[2]-x1_[2])+tau_star_*(x0_[5]+x1_[5]))/t3;
+  coeff_(2, 1) = -(3.0*(x0_[2]-x1_[2])+tau_star_*(2*x0_[5]+x1_[5]))/t2;
+  coeff_(2, 2) = x0_[5];
+  coeff_(2, 3) = x0_[2];
+
+  return result;
+}
+
+bool IntegratorBVP::calTauStarDouble()
+{
   VectorXd p(5);
   p[0] = 1;
   p[1] = 0;
-  p[2] =(- 4.0*x0_[3]*x0_[3] - 4.0*x0_[3]*x1_[3] - 4.0*x1_[3]*x1_[3] 
-        - 4.0*x0_[4]*x0_[4] - 4.0*x0_[4]*x1_[4] - 4.0*x1_[4]*x1_[4] 
-        - 4.0*x0_[5]*x0_[5] - 4.0*x0_[5]*x1_[5] - 4.0*x1_[5]*x1_[5]) * rho_;
-  p[3] =(- 24.0*x0_[0]*x0_[3] - 24.0*x0_[0]*x1_[3] + 24.0*x1_[0]*x0_[3] 
-        + 24.0*x1_[0]*x1_[3] - 24.0*x0_[1]*x0_[4] - 24.0*x0_[1]*x1_[4] 
-        + 24.0*x1_[1]*x0_[4] + 24.0*x1_[1]*x1_[4] - 24.0*x0_[2]*x0_[5] 
-        - 24.0*x0_[2]*x1_[5] + 24.0*x1_[2]*x0_[5] + 24.0*x1_[2]*x1_[5]) * rho_;
-  p[4] =(- 36.0*x0_[0]*x0_[0] + 72.0*x0_[0]*x1_[0] - 36.0*x1_[0]*x1_[0] 
-        - 36.0*x0_[1]*x0_[1] + 72.0*x0_[1]*x1_[1] - 36.0*x1_[1]*x1_[1] 
-        - 36.0*x0_[2]*x0_[2] + 72.0*x0_[2]*x1_[2] - 36.0*x1_[2]*x1_[2]) * rho_;
+  p[2] = (x0_[3]*x0_[3] + x0_[3]*x1_[3] + x1_[3]*x1_[3] 
+        + x0_[4]*x0_[4] + x0_[4]*x1_[4] + x1_[4]*x1_[4] 
+        + x0_[5]*x0_[5] + x0_[5]*x1_[5] + x1_[5]*x1_[5]) * (-4.0) * rho_;
+  p[3] =(- x0_[0]*x0_[3] - x0_[0]*x1_[3] + x1_[0]*x0_[3] 
+        + x1_[0]*x1_[3] - x0_[1]*x0_[4] - x0_[1]*x1_[4] 
+        + x1_[1]*x0_[4] + x1_[1]*x1_[4] - x0_[2]*x0_[5] 
+        - x0_[2]*x1_[5] + x1_[2]*x0_[5] + x1_[2]*x1_[5]) * 24.0 * rho_;
+  p[4] =(- x0_[0]*x0_[0] + 2.0*x0_[0]*x1_[0] - x1_[0]*x1_[0] 
+        - x0_[1]*x0_[1] + 2.0*x0_[1]*x1_[1] - x1_[1]*x1_[1] 
+        - x0_[2]*x0_[2] + 2.0*x0_[2]*x1_[2] - x1_[2]*x1_[2]) * 36.0 * rho_;
   std::set<double> roots = RootFinder::solvePolynomial(p, DBL_EPSILON, DBL_MAX, FLT_EPSILON);
   
   bool result = false;
@@ -43,28 +65,42 @@ bool IntegratorBVP::solveDouble()
       result = true;
     }
   }
-  
-  double t2 = tau*tau;
-  double t3 = t2*tau;
-  coeff_(0, 0) = (2.0*(x0_[0]-x1_[0])+tau*(x0_[3]+x1_[3]))/t3;
-  coeff_(0, 1) = -(3.0*(x0_[0]-x1_[0])+tau*(2*x0_[3]+x1_[3]))/t2;
-  coeff_(0, 2) = x0_[3];
-  coeff_(0, 3) = x0_[0];
-  coeff_(1, 0) = (2.0*(x0_[1]-x1_[1])+tau*(x0_[4]+x1_[4]))/t3;
-  coeff_(1, 1) = -(3.0*(x0_[1]-x1_[1])+tau*(2*x0_[4]+x1_[4]))/t2;
-  coeff_(1, 2) = x0_[4];
-  coeff_(1, 3) = x0_[1];
-  coeff_(2, 0) = (2.0*(x0_[2]-x1_[2])+tau*(x0_[5]+x1_[5]))/t3;
-  coeff_(2, 1) = -(3.0*(x0_[2]-x1_[2])+tau*(2*x0_[5]+x1_[5]))/t2;
-  coeff_(2, 2) = x0_[5];
-  coeff_(2, 3) = x0_[2];
-
   tau_star_ = tau;
   cost_star_ = cost;
   return result;
 }
 
 bool IntegratorBVP::solveTriple()
+{
+  bool result = calTauStarTriple();
+  
+  double t2 = tau_star_*tau_star_;
+  double t3 = tau_star_*t2;
+  double t4 = tau_star_*t3;
+  double t5 = tau_star_*t4;
+  coeff_(0, 0) = -(12*x0_[0] + 6*tau_star_*x0_[3] + t2*x0_[6] - 12*x1_[0] + 6*tau_star_*x1_[3] - t2*x1_[6])/(2*t5); 
+  coeff_(1, 0) = -(12*x0_[1] + 6*tau_star_*x0_[4] + t2*x0_[7] - 12*x1_[1] + 6*tau_star_*x1_[4] - t2*x1_[7])/(2*t5); 
+  coeff_(2, 0) = -(12*x0_[2] + 6*tau_star_*x0_[5] + t2*x0_[8] - 12*x1_[2] + 6*tau_star_*x1_[5] - t2*x1_[8])/(2*t5);
+  coeff_(0, 1) = -(-30*x0_[0] - 16*tau_star_*x0_[3] - 3*t2*x0_[6] + 30*x1_[0] - 14*tau_star_*x1_[3] + 2*t2*x1_[6])/(2*t4);
+  coeff_(1, 1) = -(-30*x0_[1] - 16*tau_star_*x0_[4] - 3*t2*x0_[7] + 30*x1_[1] - 14*tau_star_*x1_[4] + 2*t2*x1_[7])/(2*t4);
+  coeff_(2, 1) = -(-30*x0_[2] - 16*tau_star_*x0_[5] - 3*t2*x0_[8] + 30*x1_[2] - 14*tau_star_*x1_[5] + 2*t2*x1_[8])/(2*t4); 
+  coeff_(0, 2) = -(20*x0_[0] + 12*tau_star_*x0_[3] + 3*t2*x0_[6] - 20*x1_[0] + 8*tau_star_*x1_[3] - t2*x1_[6])/(2*t3); 
+  coeff_(1, 2) = -(20*x0_[1] + 12*tau_star_*x0_[4] + 3*t2*x0_[7] - 20*x1_[1] + 8*tau_star_*x1_[4] - t2*x1_[7])/(2*t3); 
+  coeff_(2, 2) = -(20*x0_[2] + 12*tau_star_*x0_[5] + 3*t2*x0_[8] - 20*x1_[2] + 8*tau_star_*x1_[5] - t2*x1_[8])/(2*t3); 
+  coeff_(0, 3) = x0_[6]/2; 
+  coeff_(1, 3) = x0_[7]/2; 
+  coeff_(2, 3) = x0_[8]/2;
+  coeff_(0, 4) = x0_[3]; 
+  coeff_(1, 4) = x0_[4];
+  coeff_(2, 4) = x0_[5]; 
+  coeff_(0, 5) = x0_[0]; 
+  coeff_(1, 5) = x0_[1]; 
+  coeff_(2, 5) = x0_[2];
+
+  return result;
+}
+
+bool IntegratorBVP::calTauStarTriple()
 {
   VectorXd p(5);
   p[0] = 35 + rho_*(3*x0_[6]*x0_[6] + 3*x0_[7]*x0_[7] + 3*x0_[8]*x0_[8] 
@@ -122,29 +158,6 @@ bool IntegratorBVP::solveTriple()
       result = true;
     }
   }
-  
-  double t2 = tau*tau;
-  double t3 = tau*t2;
-  double t4 = tau*t3;
-  double t5 = tau*t4;
-  coeff_(0, 0) = -(12*x0_[0] + 6*tau*x0_[3] + t2*x0_[6] - 12*x1_[0] + 6*tau*x1_[3] - t2*x1_[6])/(2*t5); 
-  coeff_(1, 0) = -(12*x0_[1] + 6*tau*x0_[4] + t2*x0_[7] - 12*x1_[1] + 6*tau*x1_[4] - t2*x1_[7])/(2*t5); 
-  coeff_(2, 0) = -(12*x0_[2] + 6*tau*x0_[5] + t2*x0_[8] - 12*x1_[2] + 6*tau*x1_[5] - t2*x1_[8])/(2*t5);
-  coeff_(0, 1) = -(-30*x0_[0] - 16*tau*x0_[3] - 3*t2*x0_[6] + 30*x1_[0] - 14*tau*x1_[3] + 2*t2*x1_[6])/(2*t4);
-  coeff_(1, 1) = -(-30*x0_[1] - 16*tau*x0_[4] - 3*t2*x0_[7] + 30*x1_[1] - 14*tau*x1_[4] + 2*t2*x1_[7])/(2*t4);
-  coeff_(2, 1) = -(-30*x0_[2] - 16*tau*x0_[5] - 3*t2*x0_[8] + 30*x1_[2] - 14*tau*x1_[5] + 2*t2*x1_[8])/(2*t4); 
-  coeff_(0, 2) = -(20*x0_[0] + 12*tau*x0_[3] + 3*t2*x0_[6] - 20*x1_[0] + 8*tau*x1_[3] - t2*x1_[6])/(2*t3); 
-  coeff_(1, 2) = -(20*x0_[1] + 12*tau*x0_[4] + 3*t2*x0_[7] - 20*x1_[1] + 8*tau*x1_[4] - t2*x1_[7])/(2*t3); 
-  coeff_(2, 2) = -(20*x0_[2] + 12*tau*x0_[5] + 3*t2*x0_[8] - 20*x1_[2] + 8*tau*x1_[5] - t2*x1_[8])/(2*t3); 
-  coeff_(0, 3) = x0_[6]/2; 
-  coeff_(1, 3) = x0_[7]/2; 
-  coeff_(2, 3) = x0_[8]/2;
-  coeff_(0, 4) = x0_[3]; 
-  coeff_(1, 4) = x0_[4];
-  coeff_(2, 4) = x0_[5]; 
-  coeff_(0, 5) = x0_[0]; 
-  coeff_(1, 5) = x0_[1]; 
-  coeff_(2, 5) = x0_[2];
 
   tau_star_ = tau;
   cost_star_ = cost;

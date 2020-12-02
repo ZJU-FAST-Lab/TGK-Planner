@@ -68,13 +68,13 @@ public:
     tracks = tracks_;
   }
 
-  bool samplingOnce(StatePVA &rand_state);
+  bool samplingOnce(int idx, StatePVA &rand_state);
 
 private:
   PosChecker::Ptr pos_checker_;
   vector<Vector3d> unit_tracks_, p_head_, tracks_, rotated_unit_tracks_;
   vector<pair<Vector3d, Vector3d>> all_corners_;
-  Vector3d init_pos_, goal_pos_;
+  Vector3d init_pos_, goal_pos_, zigzag_pos_;
   std::mt19937_64 gen_;                  
   std::uniform_real_distribution<double> pos_mean_rand_, seg_rand_;
   std::normal_distribution<double> pos_hor_rand_;

@@ -33,6 +33,7 @@ include_directories(
 
 add_library(${PROJECT_NAME}
   src/krrtplanner.cpp
+  src/kfmt.cpp
   src/kdtree.c
   src/raycast.cpp
   src/bias_sampler.cpp

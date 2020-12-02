@@ -9,6 +9,14 @@ void BiasSampler::findSamplingSpace(const vector<pair<Vector3d, Vector3d>>& segs
   pair<Vector3d, Vector3d> corner;
   for (const auto& s : segs) 
   {
+    // ROS_WARN_STREAM("travel line: " << s.first.transpose() << ", " << s.second.transpose());
+    if (s.second[2] == -1.0)
+    {
+      corner.first = s.first;
+      corner.second = s.first;
+      all_corners.push_back(corner);
+      continue;
+    }
     Vector2d middle_v = (s.first.head(2) + s.second.head(2)) / 2;
     Vector2d tail_diff_head = s.second.head(2) - s.first.head(2);
     double l = tail_diff_head.norm();
@@ -275,13 +283,9 @@ void BiasSampler::setupRandomSampling(const Vector3d& init_pt, const Vector3d& g
 //     }
 }
 
-bool BiasSampler::samplingOnce(StatePVA& rand_state)
+bool BiasSampler::samplingOnce(int idx, StatePVA& rand_state)
 {
-  static int i(0);
-  int idx = i % tracks_.size();
-  i++;
-  if (i > 1000)
-    i = 0;
+  idx = idx % tracks_.size();
   double pos_mean = pos_mean_rand_(gen_);
   double pos_hor = pos_hor_rand_(gen_);
   double pos_ver = pos_ver_rand_(gen_);

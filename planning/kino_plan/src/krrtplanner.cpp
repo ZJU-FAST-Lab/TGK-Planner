@@ -1,11 +1,5 @@
 #include "kino_plan/krrtplanner.h"
-#include "kino_plan/raycast.h"
-#include <float.h>
 #include <queue>
-#include <ros/console.h>
-
-using Eigen::Vector3d;
-using Eigen::Vector2d;
 
 #ifdef TIMING
 double check_path_time = 0.0;
@@ -270,9 +264,9 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   kd_insert3(kd_tree, goal_node_->x[0], goal_node_->x[1], goal_node_->x[2], goal_node_);
 
   //TODO changable radius
-  double tau_for_instance = radius_cost_between_two_states_ * 0.75; //maximum
-  double fwd_radius_p = getForwardRadius(tau_for_instance, radius_cost_between_two_states_);  
-  double bcwd_radius_p = getBackwardRadius(tau_for_instance, radius_cost_between_two_states_);
+  double tau_for_instance = radius * 0.75; //maximum
+  double fwd_radius_p = getForwardRadius(tau_for_instance, radius);  
+  double bcwd_radius_p = getBackwardRadius(tau_for_instance, radius);
   ROS_INFO_STREAM("bcwd_radius_p: " << bcwd_radius_p);
   ROS_INFO_STREAM("fwd_radius_p: " << fwd_radius_p);
 
@@ -283,7 +277,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   {
     /* biased random sampling */
     StatePVA x_rand;
-    bool good_sample = sampler_.samplingOnce(x_rand);
+    bool good_sample = sampler_.samplingOnce(idx, x_rand);
     // samples.push_back(x_rand);
     if (!good_sample) 
     {
@@ -294,7 +288,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
     
     /* kd_tree bounds search for parent */
     struct kdres *p_bcwd_nbr_set;
-    p_bcwd_nbr_set = getBackwardNeighbour(x_rand, kd_tree, radius_cost_between_two_states_ - tau_for_instance, bcwd_radius_p);
+    p_bcwd_nbr_set = getBackwardNeighbour(x_rand, kd_tree, radius - tau_for_instance, bcwd_radius_p);
     if (p_bcwd_nbr_set == nullptr)
     {
       ROS_ERROR("bkwd kd range query error");

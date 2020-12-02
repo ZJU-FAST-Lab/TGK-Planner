@@ -76,10 +76,22 @@
     <param name="krrt/stop_after_first_traj_found" value="false" type="bool" />
     <param name="krrt/rewire" value="true" type="bool" />
 
+    <param name="kfmt/rho" value="0.13" type="double"/> <!-- the quadratic matrix R of u'Ru -->
+    <param name="kfmt/vel_limit" value="$(arg vel_limit)" type="double" />
+    <param name="kfmt/acc_limit" value="$(arg acc_limit)" type="double" />
+    <param name="kfmt/preallocate_node_pool_num" value="200" type="int" />
+    <param name="kfmt/sample_num_per_meter" value="2" type="int" />
+    <param name="kfmt/debug_vis" value="false" type="bool" />
+    <param name="kfmt/radius_cost_between_two_states" value="4" type="double" /> <!-- cost tolerance -->
+    <param name="kfmt/allow_close_goal" value="true" type="bool" />
+    <param name="kfmt/lambda_heu" value="1.0" type="double" />
+    <param name="kfmt/tie_breaker" value="1.0001" type="double" />
+    <param name="kfmt/search_time" value="0.05" type="double" />
+
     <param name="sampler/vel_mag_mean" value="3.0" type="double" />
     <param name="sampler/pos_hrz_var" value="1.0" type="double" />
     <param name="sampler/pos_vtc_var" value="0.2" type="double" />
-    <param name="sampler/vel_mag_var" value="0.5" type="double" />
+    <param name="sampler/vel_mag_var" value="0.7" type="double" />
     <param name="sampler/vel_dir_var" value="0.2" type="double" />
     <param name="sampler/resolution" value="$(arg resolution)" type="double" />
 

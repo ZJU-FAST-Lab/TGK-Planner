@@ -52,7 +52,13 @@ public:
       printf("Input model is neither double integrator nor triple.");
       return false;
     }
-    
+  };
+
+  double estimateHeuristic(const VectorXd& start, const VectorXd& goal)
+  {
+    setBoundaries(start, goal);
+    calTauStarDouble();
+    return cost_star_;
   };
 
   double getTauStar()
@@ -78,8 +84,9 @@ private:
   CoefficientMat coeff_;
   double tau_star_, cost_star_;
 
+  bool calTauStarDouble();
   bool solveDouble();
-
+  bool calTauStarTriple();
   bool solveTriple();
 
   void setBoundaries(const VectorXd& start, const VectorXd& goal) 

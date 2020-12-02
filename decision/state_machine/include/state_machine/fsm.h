@@ -5,6 +5,7 @@
 #include "occ_grid/occ_map.h"
 #include "occ_grid/pos_checker.h"
 #include "kino_plan/krrtplanner.h"
+#include "kino_plan/kfmt.h"
 #include "visualization_utils/visualization_utils.h"
 #include "poly_opt/traj_optimizer.h"
 #include "quadrotor_msgs/PolynomialTrajectory.h"
@@ -43,7 +44,8 @@ private:
   // map, checker, planner 
   OccMap::Ptr env_ptr_;
   PosChecker::Ptr pos_checker_ptr_;
-  KRRTPlanner::KRRTPlannerPtr krrt_planner_ptr_;
+  KFMTPlanner::KFMTPlannerPtr front_end_planner_ptr_;
+  // KRRTPlanner::KRRTPlannerPtr front_end_planner_ptr_;
   TrajOptimizer::Ptr optimizer_ptr_;
   VisualRviz::Ptr vis_ptr_;
   

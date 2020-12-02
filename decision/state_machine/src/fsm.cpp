@@ -22,10 +22,11 @@ namespace tgk_planner
     pos_checker_ptr_->init(nh);
     pos_checker_ptr_->setMap(env_ptr_);
 
-    krrt_planner_ptr_.reset(new KRRTPlanner(nh));
-    krrt_planner_ptr_->init(nh);
-    krrt_planner_ptr_->setPosChecker(pos_checker_ptr_);
-    krrt_planner_ptr_->setVisualizer(vis_ptr_);
+    front_end_planner_ptr_.reset(new KFMTPlanner(nh));
+    // front_end_planner_ptr_.reset(new KRRTPlanner(nh));
+    front_end_planner_ptr_->init(nh);
+    front_end_planner_ptr_->setPosChecker(pos_checker_ptr_);
+    front_end_planner_ptr_->setVisualizer(vis_ptr_);
 
     optimizer_ptr_.reset(new TrajOptimizer(nh));
     optimizer_ptr_->setPosChecker(pos_checker_ptr_);
@@ -181,7 +182,7 @@ namespace tgk_planner
       bool success = searchForTraj(start_pos_, start_vel_, start_acc_, end_pos_, end_vel_, end_acc_, replan_time_, normal, dire, false); //TODO what if it can not finish in 10ms?
       if (success)
       {
-        krrt_planner_ptr_->getTraj(traj_);
+        front_end_planner_ptr_->getTraj(traj_);
         if (use_optimization_)
         {
           bool optimize_succ = optimize();
@@ -306,7 +307,7 @@ namespace tgk_planner
       //found a traj towards goal
       if (success)
       {
-        krrt_planner_ptr_->getTraj(traj_);
+        front_end_planner_ptr_->getTraj(traj_);
         ROS_WARN("Replan front-end success");
         if (use_optimization_)
         {
@@ -377,7 +378,7 @@ namespace tgk_planner
                           double search_time, const Vector3d &normal, const Vector3d &dire, bool need_consistancy)
   {
     int result(false);
-    result = krrt_planner_ptr_->plan(start_pos, start_vel, start_acc, end_pos, end_vel, end_acc, search_time, normal, dire, need_consistancy);
+    result = front_end_planner_ptr_->plan(start_pos, start_vel, start_acc, end_pos, end_vel, end_acc, search_time, normal, dire, need_consistancy);
     if (result == SUCCESS)
     {
       close_goal_traj_ = false;

@@ -265,35 +265,35 @@ Visualization Manager:
           Queue Size: 100
           Value: false
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /state_machine_node/rand_sample_pos_points
           Name: sample pos
           Namespaces:
-            {}
+            sample: true
           Queue Size: 1
-          Value: false
+          Value: true
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /state_machine_node/rand_sample_vel_vecs
           Name: sample vel
           Namespaces:
-            {}
+            sample: true
           Queue Size: 1
-          Value: false
+          Value: true
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /state_machine_node/topo
           Name: Topo
           Namespaces:
-            {}
+            topo: true
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /state_machine_node/knots
           Name: knots
           Namespaces:
-            {}
+            traj: true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -305,13 +305,13 @@ Visualization Manager:
           Queue Size: 100
           Value: false
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /state_machine_node/best_traj_pos
           Name: Best_traj_pos
           Namespaces:
-            {}
+            traj: true
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/Marker
           Enabled: false
           Marker Topic: /state_machine_node/first_traj_acc
@@ -349,7 +349,7 @@ Visualization Manager:
           Marker Topic: /state_machine_node/optimized_traj_acc
           Name: optimized_traj_acc
           Namespaces:
-            {}
+            traj: true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -357,7 +357,7 @@ Visualization Manager:
           Marker Topic: /state_machine_node/optimized_traj_pos
           Name: optimized_traj_pos
           Namespaces:
-            {}
+            traj: true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -373,7 +373,7 @@ Visualization Manager:
           Marker Topic: /state_machine_node/tree_traj_pos
           Name: Tree_traj_pos
           Namespaces:
-            {}
+            traj: true
           Queue Size: 1
           Value: true
         - Class: rviz/Marker
@@ -385,27 +385,27 @@ Visualization Manager:
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
-          Enabled: true
+          Enabled: false
           Marker Topic: /state_machine_node/fwd_reachable_pos
           Name: fwd_bounds
           Namespaces:
             {}
           Queue Size: 100
-          Value: true
+          Value: false
         - Class: rviz/Marker
-          Enabled: true
+          Enabled: false
           Marker Topic: /state_machine_node/bwd_reachable_pos
           Name: bcwd_bounds
           Namespaces:
             {}
           Queue Size: 100
-          Value: true
+          Value: false
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /state_machine_node/collision
           Name: future_collision
           Namespaces:
-            {}
+            colllision: true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -413,7 +413,7 @@ Visualization Manager:
           Marker Topic: /state_machine_node/collision
           Name: future_collision
           Namespaces:
-            {}
+            colllision: true
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -452,25 +452,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 56.4906883
+      Distance: 57.9552765
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 20.5286865
-        Y: 18.8814316
-        Z: -11.8994722
+        X: 19.5652943
+        Y: -3.17312717
+        Z: -26.5642834
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.03479671
-      Target Frame: ego_desired
+      Pitch: 1.3847965
+      Target Frame: map
       Value: Orbit (rviz)
-      Yaw: 4.5303688
+      Yaw: 3.17718935
     Saved: ~
 Window Geometry:
   Displays:

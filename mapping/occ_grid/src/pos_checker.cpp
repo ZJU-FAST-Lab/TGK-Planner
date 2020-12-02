@@ -171,6 +171,7 @@ bool PosChecker::checkPolySeg(const Piece &seg, vector<pair<Vector3d, Vector3d>>
   pair<Vector3d, Vector3d> line;
   bool is_valid(true);
   bool result(true);
+  bool zigzag(false);
   Vector3d last_pos = seg.getPos(0.0);
 
   for (double t = 0.0; t <= tau; t += dt_)
@@ -179,6 +180,21 @@ bool PosChecker::checkPolySeg(const Piece &seg, vector<pair<Vector3d, Vector3d>>
     pos = seg.getPos(t);
     vel = seg.getVel(t);
     acc = seg.getAcc(t);
+    if (!zigzag)
+    {
+      if (t > 0.3 && t < tau - 0.3)
+      {
+        double tmp = vel.norm() * vel.norm() * vel.norm();
+        double k = (vel.cross(acc)).norm() / tmp;
+        if (k >= 6)
+        {
+          line.first = pos;
+          line.second = Eigen::Vector3d(0.0, 0.0, -1.0);
+          traversal_lines.push_back(line);
+          zigzag = true;
+        }
+      }
+    }
 
     if (is_valid && !checkState(pos, vel, acc))
     {

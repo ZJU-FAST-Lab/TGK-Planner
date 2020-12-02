@@ -269,7 +269,7 @@ void VisualRviz::visualizeSampledState(const std::vector<StatePVA> &nodes, ros::
     vel_vec.color.a = 1.0;
 
     rand_sample_pos_point_pub_.publish(pos_point);
-    // rand_sample_vel_vec_pub_.publish(vel_vec);
+    rand_sample_vel_vec_pub_.publish(vel_vec);
 }
 
 void VisualRviz::visualizeValidSampledState(const std::vector<StatePVA> &nodes, ros::Time local_time)
