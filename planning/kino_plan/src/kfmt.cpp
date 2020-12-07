@@ -148,7 +148,7 @@ int KFMTPlanner::plan(Vector3d start_pos, Vector3d start_vel, Vector3d start_acc
   }
   goal_node_->x.segment(3, 3) = end_vel;
   goal_node_->x.tail(3) = end_acc;
-  start_node_->f_score = lambda_heu_ * bvp_.estimateHeuristic(start_node_->x.head(6), goal_node_->x.head(6));
+  start_node_->f_score = 0.0;//lambda_heu_ * bvp_.estimateHeuristic(start_node_->x.head(6), goal_node_->x.head(6));
   sampled_node_num_ = 2;
   vis_ptr_->visualizeStartAndGoal(start_node_->x, goal_node_->x, pos_checker_ptr_->getLocalTime());
 
@@ -298,9 +298,10 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
           bcwd_nbr->children.push_back(cur_fwd_nbr);
           cur_fwd_nbr->parent = bcwd_nbr;
           cur_fwd_nbr->g_score = g_score_hat;
-          cur_fwd_nbr->f_score = cur_fwd_nbr->g_score + lambda_heu_ * bvp_.estimateHeuristic(cur_fwd_nbr->x.head(6), goal_node_->x.head(6));
+          cur_fwd_nbr->f_score = cur_fwd_nbr->g_score;// + lambda_heu_ * bvp_.estimateHeuristic(cur_fwd_nbr->x.head(6), goal_node_->x.head(6));
           cur_fwd_nbr->status = OPEN;
           cur_fwd_nbr->poly_seg = Piece(tau, coeff);
+          cur_fwd_nbr->x.segment(6, 3) = cur_fwd_nbr->poly_seg.getAcc(tau);
           open_set_.push(cur_fwd_nbr);
           close_goal_node_ = cur_fwd_nbr;
           close_goal_found = true;
@@ -321,11 +322,28 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
           // goal found
           if (cur_fwd_nbr == goal_node_)
           {
-            ROS_WARN("goal found!");
+            // ROS_INFO("goal found!");
             goal_found = true;
             kd_res_free(p_bcwd_nbr_set); //reset kd tree range query
             break;
           } 
+          //try to connect to goal
+          if (bvp_.solve(cur_fwd_nbr->x, goal_node_->x, ACC_KNOWN))
+          {
+            CoefficientMat coeff;
+            bvp_.getCoeff(coeff);
+            Piece seg2goal = Piece(bvp_.getTauStar(), coeff);
+            bool connected_to_goal = checkSegmentConstraints(seg2goal);
+            if (connected_to_goal) 
+            {
+              goal_node_->parent = cur_fwd_nbr;
+              goal_node_->g_score = cur_fwd_nbr->g_score + bvp_.getCostStar();
+              goal_node_->f_score = goal_node_->g_score;
+              goal_node_->poly_seg = seg2goal;
+              cur_fwd_nbr->children.push_back(goal_node_);
+              goal_found = true;
+            }
+          }
         }
       }
       kd_res_free(p_bcwd_nbr_set); //reset kd tree range query
@@ -341,11 +359,11 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
   }
   kd_free(kd_tree);
 
-  vis_x.clear();
-  vector<Vector3d> knots;
-  sampleWholeTree(start_node_, &vis_x, knots);
-  vis_ptr_->visualizeStates(vis_x, TreeTraj, pos_checker_ptr_->getLocalTime());
-  vis_ptr_->visualizeKnots(knots, pos_checker_ptr_->getLocalTime());
+  // vis_x.clear();
+  // vector<Vector3d> knots;
+  // sampleWholeTree(start_node_, &vis_x, knots);
+  // vis_ptr_->visualizeStates(vis_x, TreeTraj, pos_checker_ptr_->getLocalTime());
+  // vis_ptr_->visualizeKnots(knots, pos_checker_ptr_->getLocalTime());
   
   if (goal_found)
   {
@@ -353,7 +371,7 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
     double final_traj_use_time = (ros::Time::now() - fmt_start_time).toSec();
     vis_x.clear();
     traj_.sampleWholeTrajectory(&vis_x);
-    vis_ptr_->visualizeStates(vis_x, FinalTraj, pos_checker_ptr_->getLocalTime());
+    vis_ptr_->visualizeStates(vis_x, BestTraj, pos_checker_ptr_->getLocalTime());
     double final_traj_len(0.0), final_traj_duration(0.0), final_traj_acc_itg(0.0), final_traj_jerk_itg(0.0);
     int final_traj_seg_nums(0);
     evaluateTraj(traj_, final_traj_duration, final_traj_len, final_traj_seg_nums, final_traj_acc_itg, final_traj_jerk_itg);
@@ -364,18 +382,19 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
          << "    -   acc integral: " << final_traj_acc_itg << endl
          << "    -   jerk integral: " << final_traj_jerk_itg << endl
          << "    -   traj duration: " << final_traj_duration << " s" << endl 
-         << "    -   path length: " << final_traj_len << " m");
+         << "    -   path length: " << final_traj_len << " m"<< endl 
+         << "    -   general cost: " << goal_node_->g_score);
     return SUCCESS;
   }
   else if (allow_close_goal_ && close_goal_found)
   {
-    ROS_INFO("open set empty, no path, choose bypass");
+    ROS_WARN("open set empty, no path, choose bypass");
     // chooseBypass(close_goal_node_, start_node_);
     fillTraj(close_goal_node_, traj_);
     double final_traj_use_time = (ros::Time::now() - fmt_start_time).toSec();
     vis_x.clear();
     traj_.sampleWholeTrajectory(&vis_x);
-    vis_ptr_->visualizeStates(vis_x, FinalTraj, pos_checker_ptr_->getLocalTime());
+    vis_ptr_->visualizeStates(vis_x, BestTraj, pos_checker_ptr_->getLocalTime());
     double final_traj_len(0.0), final_traj_duration(0.0), final_traj_acc_itg(0.0), final_traj_jerk_itg(0.0);
     int final_traj_seg_nums(0);
     evaluateTraj(traj_, final_traj_duration, final_traj_len, final_traj_seg_nums, final_traj_acc_itg, final_traj_jerk_itg);
@@ -386,18 +405,19 @@ int KFMTPlanner::fmtStar(const StatePVA& x_init, const StatePVA& x_final, int sa
          << "    -   acc integral: " << final_traj_acc_itg << endl
          << "    -   jerk integral: " << final_traj_jerk_itg << endl
          << "    -   traj duration: " << final_traj_duration << " s" << endl 
-         << "    -   path length: " << final_traj_len << " m");
+         << "    -   path length: " << final_traj_len << " m"<< endl 
+         << "    -   general cost: " << close_goal_node_->g_score);
     return SUCCESS_CLOSE_GOAL;
   }
   else if ((ros::Time::now() - fmt_start_time).toSec() >= search_time_)
   {
-    ROS_INFO_STREAM("[KFMT]: NOT CONNECTED TO GOAL after " << (ros::Time::now() - fmt_start_time).toSec() << " seconds");
+    ROS_ERROR_STREAM("[KFMT]: NOT CONNECTED TO GOAL after " << (ros::Time::now() - fmt_start_time).toSec() << " seconds");
     ROS_INFO_STREAM("[KFMT]: total iteration times: " << iter_num_);
     return FAILURE;
   }
   else
   {
-    ROS_INFO_STREAM("[KFMT]: Open Set Empty, No Path. Used " << (ros::Time::now() - fmt_start_time).toSec() << " seconds");
+    ROS_ERROR_STREAM("[KFMT]: Open Set Empty, No Path. Used " << (ros::Time::now() - fmt_start_time).toSec() << " seconds");
     ROS_INFO_STREAM("[KFMT]: total iteration times: " << iter_num_);
     return FAILURE;
   }

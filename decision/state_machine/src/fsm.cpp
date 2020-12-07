@@ -28,6 +28,11 @@ namespace tgk_planner
     front_end_planner_ptr_->setPosChecker(pos_checker_ptr_);
     front_end_planner_ptr_->setVisualizer(vis_ptr_);
 
+    front_end_planner_ptr2_.reset(new KRRTPlanner(nh));
+    front_end_planner_ptr2_->init(nh);
+    front_end_planner_ptr2_->setPosChecker(pos_checker_ptr_);
+    front_end_planner_ptr2_->setVisualizer(vis_ptr_);
+
     optimizer_ptr_.reset(new TrajOptimizer(nh));
     optimizer_ptr_->setPosChecker(pos_checker_ptr_);
     optimizer_ptr_->setVisualizer(vis_ptr_);
@@ -182,7 +187,7 @@ namespace tgk_planner
       bool success = searchForTraj(start_pos_, start_vel_, start_acc_, end_pos_, end_vel_, end_acc_, replan_time_, normal, dire, false); //TODO what if it can not finish in 10ms?
       if (success)
       {
-        front_end_planner_ptr_->getTraj(traj_);
+        front_end_planner_ptr2_->getTraj(traj_);
         if (use_optimization_)
         {
           bool optimize_succ = optimize();
@@ -221,8 +226,8 @@ namespace tgk_planner
         ROS_WARN("Replan because of new goal received");
         new_goal_ = false;
         remain_safe_time_ = traj_.getTotalDuration() - t_during_traj;
-        ROS_INFO("t_during_traj: %lf", t_during_traj);
-        ROS_INFO("remain_safe_time: %lf", remain_safe_time_);
+        // ROS_INFO("t_during_traj: %lf", t_during_traj);
+        // ROS_INFO("remain_safe_time: %lf", remain_safe_time_);
         collision_detect_time = ros::Time::now();
         changeState(REPLAN_TRAJ);
       }
@@ -307,7 +312,7 @@ namespace tgk_planner
       //found a traj towards goal
       if (success)
       {
-        front_end_planner_ptr_->getTraj(traj_);
+        front_end_planner_ptr2_->getTraj(traj_);
         ROS_WARN("Replan front-end success");
         if (use_optimization_)
         {
@@ -378,7 +383,8 @@ namespace tgk_planner
                           double search_time, const Vector3d &normal, const Vector3d &dire, bool need_consistancy)
   {
     int result(false);
-    result = front_end_planner_ptr_->plan(start_pos, start_vel, start_acc, end_pos, end_vel, end_acc, search_time, normal, dire, need_consistancy);
+    result = front_end_planner_ptr2_->plan(start_pos, start_vel, start_acc, end_pos, end_vel, end_acc, search_time, normal, dire, need_consistancy);
+    // result = front_end_planner_ptr_->plan(start_pos, start_vel, start_acc, end_pos, end_vel, end_acc, search_time, normal, dire, need_consistancy);
     if (result == SUCCESS)
     {
       close_goal_traj_ = false;

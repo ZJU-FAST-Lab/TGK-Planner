@@ -651,6 +651,30 @@ public:
             pieces[i].sampleOneSeg(vis_x);
         }
     }
+
+    inline double evaluateTrajJerk() const
+    {
+        double objective = 0.0;
+        int M = getPieceNum();
+        CoefficientMat cMat;
+        double t1, t2, t3, t4, t5;
+        for (int i = 0; i < M; i++)
+        {
+            cMat = operator[](i).getCoeffMat();
+            t1 = operator[](i).getDuration();
+            t2 = t1 * t1;
+            t3 = t2 * t1;
+            t4 = t2 * t2;
+            t5 = t2 * t3;
+            objective += 36.0 * cMat.col(2).squaredNorm() * t1 +
+                        144.0 * cMat.col(1).dot(cMat.col(2)) * t2 +
+                        192.0 * cMat.col(1).squaredNorm() * t3 +
+                        240.0 * cMat.col(0).dot(cMat.col(2)) * t3 +
+                        720.0 * cMat.col(0).dot(cMat.col(1)) * t4 +
+                        720.0 * cMat.col(0).squaredNorm() * t5;
+        }
+        return objective;
+    }
 };
 
 #endif
