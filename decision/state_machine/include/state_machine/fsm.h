@@ -43,7 +43,7 @@ private:
   // map, checker, planner 
   OccMap::Ptr env_ptr_;
   PosChecker::Ptr pos_checker_ptr_;
-  KRRTPlanner::KRRTPlannerPtr krrt_planner_ptr_;
+  KRRTPlanner::KRRTPlannerPtr front_end_planner_ptr2_;
   TrajOptimizer::Ptr optimizer_ptr_;
   VisualRviz::Ptr vis_ptr_;
   

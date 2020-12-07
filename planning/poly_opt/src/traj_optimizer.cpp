@@ -105,7 +105,7 @@ bool TrajOptimizer::solve()
     }
   }
 
-  ROS_ERROR_STREAM("solve QP times: " << devide_times);
+  ROS_WARN_STREAM("solve QP times: " << devide_times);
   ROS_WARN("optimization fail");
   return result;
 }

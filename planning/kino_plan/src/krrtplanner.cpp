@@ -1,11 +1,5 @@
 #include "kino_plan/krrtplanner.h"
-#include "kino_plan/raycast.h"
-#include <float.h>
 #include <queue>
-#include <ros/console.h>
-
-using Eigen::Vector3d;
-using Eigen::Vector2d;
 
 #ifdef TIMING
 double check_path_time = 0.0;
@@ -252,6 +246,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
 { 
   ros::Time rrt_start_time = ros::Time::now();
   ros::Time first_goal_found_time, final_goal_found_time;
+  double first_general_cost(0.0);
   
   /* local variables */
   int valid_sample_nums = 0; //random samples in obs free area
@@ -270,9 +265,9 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   kd_insert3(kd_tree, goal_node_->x[0], goal_node_->x[1], goal_node_->x[2], goal_node_);
 
   //TODO changable radius
-  double tau_for_instance = radius_cost_between_two_states_ * 0.75; //maximum
-  double fwd_radius_p = getForwardRadius(tau_for_instance, radius_cost_between_two_states_);  
-  double bcwd_radius_p = getBackwardRadius(tau_for_instance, radius_cost_between_two_states_);
+  double tau_for_instance = radius * 0.75; //maximum
+  double fwd_radius_p = getForwardRadius(tau_for_instance, radius);  
+  double bcwd_radius_p = getBackwardRadius(tau_for_instance, radius);
   ROS_INFO_STREAM("bcwd_radius_p: " << bcwd_radius_p);
   ROS_INFO_STREAM("fwd_radius_p: " << fwd_radius_p);
 
@@ -283,7 +278,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   {
     /* biased random sampling */
     StatePVA x_rand;
-    bool good_sample = sampler_.samplingOnce(x_rand);
+    bool good_sample = sampler_.samplingOnce(idx, x_rand);
     // samples.push_back(x_rand);
     if (!good_sample) 
     {
@@ -294,7 +289,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
     
     /* kd_tree bounds search for parent */
     struct kdres *p_bcwd_nbr_set;
-    p_bcwd_nbr_set = getBackwardNeighbour(x_rand, kd_tree, radius_cost_between_two_states_ - tau_for_instance, bcwd_radius_p);
+    p_bcwd_nbr_set = getBackwardNeighbour(x_rand, kd_tree, radius - tau_for_instance, bcwd_radius_p);
     if (p_bcwd_nbr_set == nullptr)
     {
       ROS_ERROR("bkwd kd range query error");
@@ -305,6 +300,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
     double tau_from_s = DBL_MAX;
     RRTNode* x_near = nullptr; //parent
     Piece find_parent_seg;
+    double find_parent_tau;
     int bound_node_cnt = 0;
     while(!kd_res_end(p_bcwd_nbr_set)) 
     {
@@ -327,6 +323,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
           min_dist = curr_node->cost_from_start + bvp_.getCostStar();
           tau_from_s = curr_node->tau_from_start + bvp_.getTauStar();
           find_parent_seg = seg_from_parent;
+          find_parent_tau = bvp_.getTauStar();
           x_near = curr_node;
           // ROS_INFO("one parent found");
         }
@@ -366,7 +363,8 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
        * 2.rewire. */
 
       //sample rejection
-      if(bvp_.solve(x_rand, goal_node_->x))
+      x_rand.segment(6, 3) = find_parent_seg.getAcc(find_parent_tau);
+      if(bvp_.solve(x_rand, goal_node_->x, ACC_KNOWN))
       {
         if (min_dist + bvp_.getCostStar() >= goal_node_->cost_from_start) 
         {
@@ -416,6 +414,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
         // ROS_WARN_STREAM("[KRRT]: goal found at " << (ros::Time::now() - rrt_start_time).toSec() << " s , cost: " << goal_node_->cost_from_start << ", tau: " << goal_node_->tau_from_start);
         if (first_time_find_goal) 
         {
+          first_general_cost = goal_node_->cost_from_start;
           first_goal_found_time = ros::Time::now();
           first_time_find_goal = false;
           std::vector<double> durs;
@@ -446,11 +445,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
       //     close_goal_node_ = sampled_node;
       //   }
       // }
-      else if (valid_start_tree_node_nums_ == n && goal_node_->parent == nullptr) 
-      {
-        //TODO add what if not connected to goal after n samples
-        ROS_WARN_STREAM("[KRRT]: NOT CONNECTED TO GOAL after " << n << " nodes added to rrt-tree");
-      }/* end of try to connect to goal */
+      /* end of try to connect to goal */
       
       
       /* 2.rewire */
@@ -532,6 +527,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
             CoefficientMat coeff;
             bvp_.getCoeff(coeff);
             orphan_node->poly_seg = Piece(bvp_.getTauStar(), coeff);
+            orphan_node->x.segment(6, 3) = orphan_node->poly_seg.getAcc(bvp_.getTauStar());
             sampled_node->children.push_back(orphan_node);
                 
             /* 2. add the orphan node to kd_tree */
@@ -587,7 +583,8 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
          << "    -   acc integral: " << first_traj_acc_itg << endl
          << "    -   jerk integral: " << first_traj_jerk_itg << endl
          << "    -   traj duration: " << first_traj_duration << endl 
-         << "    -   path length: " << first_traj_len << " m");
+         << "    -   path length: " << first_traj_len << " m"<< endl 
+         << "    -   general cost: " << first_general_cost);
         
     ROS_INFO_STREAM("[KRRT]: [front-end final path]: " << endl 
          << "    -   seg nums: " << final_traj_seg_nums << endl 
@@ -595,7 +592,8 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
          << "    -   acc integral: " << final_traj_acc_itg << endl
          << "    -   jerk integral: " << final_traj_jerk_itg << endl
          << "    -   traj duration: " << final_traj_duration << endl 
-         << "    -   path length: " << final_traj_len << " m");
+         << "    -   path length: " << final_traj_len << " m"<< endl 
+         << "    -   general cost: " << goal_node_->cost_from_start);
     return SUCCESS;
   } 
   // else if (close_goal_found)
@@ -626,7 +624,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   // }
   else if (allow_close_goal_ && valid_start_tree_node_nums_ > 2)
   {
-    ROS_ERROR("Not connectting to goal, choose a bypass");
+    ROS_WARN("Not connectting to goal, choose a bypass");
     final_goal_found_time = ros::Time::now();
     chooseBypass(close_goal_node_, start_node_);
     fillTraj(close_goal_node_, traj_);  
@@ -648,12 +646,13 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
          << "    -   acc integral: " << final_traj_acc_itg << endl
          << "    -   jerk integral: " << final_traj_jerk_itg << endl
          << "    -   traj duration: " << final_traj_duration << endl 
-         << "    -   path length: " << final_traj_len << " m");
+         << "    -   path length: " << final_traj_len << " m" << endl 
+         << "    -   general cost: " << close_goal_node_->cost_from_start);
     return SUCCESS_CLOSE_GOAL;
   }
   else if (valid_start_tree_node_nums_ == n)
   {
-    ROS_INFO_STREAM("[KRRT]: NOT CONNECTED TO GOAL after " << n << " nodes added to rrt-tree");
+    ROS_ERROR_STREAM("[KRRT]: NOT CONNECTED TO GOAL after " << n << " nodes added to rrt-tree");
     ROS_INFO_STREAM("[KRRT]: total sample times: " << idx);
     ROS_INFO_STREAM("[KRRT]: valid sample times: " << valid_sample_nums);
     ROS_INFO_STREAM("[KRRT]: valid tree node nums: " << valid_start_tree_node_nums_);
@@ -661,7 +660,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
   }
   else if ((ros::Time::now() - rrt_start_time).toSec() >= search_time)
   {
-    ROS_INFO_STREAM("[KRRT]: NOT CONNECTED TO GOAL after " << (ros::Time::now() - rrt_start_time).toSec() << " seconds");
+    ROS_ERROR_STREAM("[KRRT]: NOT CONNECTED TO GOAL after " << (ros::Time::now() - rrt_start_time).toSec() << " seconds");
     ROS_INFO_STREAM("[KRRT]: total sample times: " << idx);
     ROS_INFO_STREAM("[KRRT]: valid sample times: " << valid_sample_nums);
     ROS_INFO_STREAM("[KRRT]: valid tree node nums: " << valid_start_tree_node_nums_);

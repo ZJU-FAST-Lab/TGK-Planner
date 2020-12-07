@@ -51,9 +51,9 @@ void VisualRviz::visualizeStates(const std::vector<StatePVA> &x, int trajectory_
         pos_point.points.push_back(p);
 
         vel_vec.points.push_back(p);
-        p.x += x[i](3, 0) / 5.0;
-        p.y += x[i](4, 0) / 5.0;
-        p.z += x[i](5, 0) / 5.0;
+        p.x += x[i](3, 0);
+        p.y += x[i](4, 0);
+        p.z += x[i](5, 0);
         vel_vec.points.push_back(p);
 
         acc_vec.points.push_back(a);
@@ -269,7 +269,7 @@ void VisualRviz::visualizeSampledState(const std::vector<StatePVA> &nodes, ros::
     vel_vec.color.a = 1.0;
 
     rand_sample_pos_point_pub_.publish(pos_point);
-    // rand_sample_vel_vec_pub_.publish(vel_vec);
+    rand_sample_vel_vec_pub_.publish(vel_vec);
 }
 
 void VisualRviz::visualizeValidSampledState(const std::vector<StatePVA> &nodes, ros::Time local_time)

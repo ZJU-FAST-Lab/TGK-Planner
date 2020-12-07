@@ -6,6 +6,8 @@
 
 #define DOUBLE_INTEGRATOR 2
 #define TRIPLE_INTEGRATOR 3
+#define ACC_KNOWN 0
+#define ACC_UNKNOWN 1
 
 namespace BVPSolver
 {
@@ -36,7 +38,7 @@ public:
     rho_ = rho;
   };
 
-  bool solve(const VectorXd& start, const VectorXd& goal)
+  bool solve(const VectorXd& start, const VectorXd& goal, int type = ACC_UNKNOWN)
   {
     setBoundaries(start, goal);
     if (model_ == DOUBLE_INTEGRATOR)
@@ -45,14 +47,23 @@ public:
     }
     else if (model_ == TRIPLE_INTEGRATOR) 
     {
-      return solveTriple();
+      if (type == ACC_UNKNOWN)
+        return solveTripleAccUnknown();
+      else
+        return solveTriple();
     }
     else
     {
       printf("Input model is neither double integrator nor triple.");
       return false;
     }
-    
+  };
+
+  double estimateHeuristic(const VectorXd& start, const VectorXd& goal)
+  {
+    setBoundaries(start, goal);
+    calTauStarDouble();
+    return cost_star_;
   };
 
   double getTauStar()
@@ -78,9 +89,16 @@ private:
   CoefficientMat coeff_;
   double tau_star_, cost_star_;
 
+  bool calTauStarDouble();
   bool solveDouble();
-
+  bool calTauStarTriple();
   bool solveTriple();
+
+  bool calTauStarTripleAccUnknown();
+  bool solveTripleAccUnknown();
+
+  bool calTauStarTripleVelAccUnknown();
+  bool solveTripleVelAccUnknown();
 
   void setBoundaries(const VectorXd& start, const VectorXd& goal) 
   {

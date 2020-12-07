@@ -64,22 +64,22 @@
     <param name="pos_checker/inflate" value="true"/>
   
     <!-- kinorrt* params --> 
-    <param name="krrt/rho" value="0.13" type="double"/> <!-- the quadratic matrix R of u'Ru -->
+    <param name="krrt/rho" value="0.01" type="double"/> <!-- the quadratic matrix R of u'Ru -->
     <param name="krrt/vel_limit" value="$(arg vel_limit)" type="double" />
     <param name="krrt/acc_limit" value="$(arg acc_limit)" type="double" />
     <param name="krrt/tree_node_nums" value="5000" type="int" />
     <param name="krrt/orphan_nums" value="1500" type="int" />
     <param name="krrt/debug_vis" value="false" type="bool" />
-    <param name="krrt/radius_cost_between_two_states" value="5" type="double" /> <!-- cost tolerance -->
+    <param name="krrt/radius_cost_between_two_states" value="4" type="double" /> <!-- cost tolerance -->
     <param name="krrt/allow_orphan" value="false" type="bool" />
     <param name="krrt/allow_close_goal" value="true" type="bool" />
     <param name="krrt/stop_after_first_traj_found" value="false" type="bool" />
     <param name="krrt/rewire" value="true" type="bool" />
 
-    <param name="sampler/vel_mag_mean" value="3.0" type="double" />
+    <param name="sampler/vel_mag_mean" value="4.0" type="double" />
     <param name="sampler/pos_hrz_var" value="1.0" type="double" />
     <param name="sampler/pos_vtc_var" value="0.2" type="double" />
-    <param name="sampler/vel_mag_var" value="0.5" type="double" />
+    <param name="sampler/vel_mag_var" value="0.7" type="double" />
     <param name="sampler/vel_dir_var" value="0.2" type="double" />
     <param name="sampler/resolution" value="$(arg resolution)" type="double" />
 
@@ -89,7 +89,7 @@
     <!-- fsm params --> 
     <param name="fsm/use_optimization" value="true" type="bool"/>
     <param name="fsm/replan" value="true" type="bool"/>
-    <param name="fsm/replan_time" value="0.05" type="double"/>
+    <param name="fsm/replan_time" value="0.02" type="double"/>
     <param name="fsm/allow_track_err_replan" value="false" type="bool"/>
     <param name="fsm/e_stop_time_margin" value="0.5" type="double"/>
     <param name="fsm/replan_check_duration" value="3.0" type="double"/>
