@@ -8,7 +8,7 @@ It can serve as a global kinodynamic planner to find asymptotically optimal traj
 __Authors__: Hongkai YE and [Fei GAO](https://ustfei.com/) from the [ZJU Fast Lab](http://www.kivact.com/).
 
 __Related Paper__:
-[Arxiv Preprint](https://arxiv.org/abs/2008.03468) (Submitted to IEEE RA-L)
+[Arxiv Preprint](https://arxiv.org/abs/2008.03468) (Accepted by IEEE RA-L)
 
 __Video Links__: [Youtube](https://youtu.be/nNS0p8h5zAk), [Bilibili](https://www.bilibili.com/video/BV1gA411e7DH) (For Mainland China)
 
@@ -110,6 +110,9 @@ In simulator.launch:
 <param name="map/obs_num" value="550"/>    
 <param name="map/circle_num" value="100"/>   
 ```
+# Acknowledgements
+We use a self developed [Root-Finder](https://github.com/ZJU-FAST-Lab/Root-Finder) to solve polynomial equations.
+
 # Licence
 The source code is released under [GPLv3](http://www.gnu.org/licenses/) license.
 
