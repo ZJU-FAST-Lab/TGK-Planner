@@ -469,7 +469,7 @@ int KRRTPlanner::rrtStar(const StatePVA& x_init, const StatePVA& x_final, int n,
             continue;
           }
           Piece seg_rewire;
-          if(bvp_.solve(x_rand, curr_node->x))
+          if(bvp_.solve(x_rand, curr_node->x, ACC_KNOWN))
           {
             CoefficientMat coeff;
             bvp_.getCoeff(coeff);
