@@ -42,15 +42,6 @@ Change directory to _~/tgk_ws_ and make:
 ~/tgk_ws/src$ cd ..
 ~/tgk_ws$ catkin_make
 ```
-If compilation errors like __header files not found__ occur, pleause first compile the package __self_msgs_and_srvs__:
-```
-~/tgk_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES="self_msgs_and_srvs"
-~/tgk_ws$ catkin_make -DCATKIN_WHITELIST_PACKAGES=""
-```
-or simply use single-thread compilation catkin_make -j1:
-```
-~/tgk_ws$ catkin_make -j1
-```
 
 ## 3. Run 
 In directory _~/tgk_ws_, set up the environment and launch the simulator:

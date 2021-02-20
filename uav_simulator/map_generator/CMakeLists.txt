@@ -29,3 +29,7 @@ add_executable (random_forest src/random_forest_sensing.cpp )
 target_link_libraries(random_forest
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES})
+  
+add_dependencies(random_forest
+   ${catkin_EXPORTED_TARGETS}
+)
