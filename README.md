@@ -1,6 +1,9 @@
 # TGK-Planner
 TGK-Planner: An Efficient Topology Guided Kinodynamic Planner for Autonomous Quadrotors
 
+## Update
+A newer version is in [here](https://github.com/ZJU-FAST-Lab/kino_sampling_with_regional_opti).
+
 ##  About
 __TGK-Planner__ is a hierarchical trajectory planner for multirotors with a sampling-based kinodynamic front-end and an optimization back-end.
 It can serve as a global kinodynamic planner to find asymptotically optimal trajectories or as a local kinodynamic planner for quick replans.
